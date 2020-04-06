@@ -19,57 +19,65 @@ class NegociacaoController {
 
     this._ordemAtual = '';
 
+    this._service = new NegociacaoService();
+
+    // função init criada, porque é recomendado só deixar propriedades no constructor
+    this._init();
+
+  }
+
+  _init() {
+
     // atualiza a lista com as negociacoes gravadas no indexedDB
-    ConnectionFactory
-      .getConnection()
-      .then(connection => new NegociacaoDao(connection))
-      .then(dao => dao.listaTodos())
+    this._service
+      .lista()
       .then(negociacoes =>
         negociacoes.forEach(negociacao =>
           this._listaNegociacoes.adiciona(negociacao)))
-      .catch(erro => {
-        console.log(erro);
-        this._mensagem.texto = erro;
-      });
+      .catch(erro => this._mensagem.texto = erro);
+
+    // na inicialização e a cada 3 segundos, as negociações serão atualizadas
+    this.importaNegociacoes();
+    setInterval(() => {
+      this.importaNegociacoes();
+    }, 3000);
+
   }
 
   adiciona(event) {
     event.preventDefault();
 
     let negociacao = this._criaNegociacao();
-    ConnectionFactory
-      .getConnection()
-      .then(connection => {
-        new NegociacaoDao(connection)
-          .adiciona(negociacao)
-          .then(() => {
-            this._listaNegociacoes.adiciona(negociacao);
-            this._mensagem.texto = 'Negociação adicionada com sucesso'
-            this._limpaFormulario();
-          });
-      }).catch(erro => this._mensagem.texto = erro);
+
+    this._service
+      .cadastra(negociacao)
+      .then(mensagem => {
+        this._listaNegociacoes.adiciona(negociacao);
+        this._mensagem.texto = mensagem;
+        this._limpaFormulario();
+      })
+      .catch(erro => this._mensagem.texto = erro);
 
   }
 
-  apagar() {
-    ConnectionFactory
-      .getConnection()
-      .then(connection => new NegociacaoDao(connection))
-      .then(dao => dao.apagaTodos())
-      .then(msg => {
+  apaga() {
+
+    this._service
+      .apaga()
+      .then(mensagem => {
+        this._mensagem.texto = mensagem;
         this._listaNegociacoes.esvazia();
-        this._mensagem.texto = msg;
       })
-      .catch(erro => this._mensagem.texto = erro);
+      .catch(erro => this._mensagem.texto = erro)
+
   }
 
   importaNegociacoes() {
-    let service = new NegociacaoService();
 
-    service.obterNegociacoes()
+    this._service
+      .importa(this._listaNegociacoes.negociacoes)
       .then(negociacoes => {
-        negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao));
-        this._mensagem.texto = 'Negociações importadas com sucesso';
+        negociacoes.forEach(negociacao => this._listaNegociacoes.adiciona(negociacao))
       })
       .catch(erro => this._mensagem.texto = erro);
   }
