@@ -1,4 +1,4 @@
-class HttpService {
+export class HttpService {
 
   _handleErrors(res) {
     // res.ok retorna true ou false, de acordo com o status da requisição 200>x>299

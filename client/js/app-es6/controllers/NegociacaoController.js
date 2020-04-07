@@ -1,3 +1,13 @@
+import { ListaNegociacoes } from '../models/ListaNegociacoes';
+import { Mensagem } from '../models/Mensagem';
+import { Negociacao } from '../models/Negociacao';
+import { NegociacoesView } from '../views/NegociacoesView';
+import { MensagemView } from '../views/MensagemView';
+import { NegociacaoService } from '../services/NegociacaoService';
+import { DateHelper } from '../helpers/DateHelper';
+import { Bind } from '../helpers/Bind';
+// import {  } from '';
+
 class NegociacaoController {
 
   constructor() {
@@ -105,4 +115,12 @@ class NegociacaoController {
 
     this._inputData.focus();
   }
+}
+
+// Desse modo, o nosso app, só terá uma instância do controller
+// ou seja, quando importarmos essa instância não estaríamos
+// criando uma nova, e sim buscando uma única
+let negociacaoController = new NegociacaoController();
+export function currentInstance() {
+  return negociacaoController;
 }
